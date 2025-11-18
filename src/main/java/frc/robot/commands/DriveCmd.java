@@ -35,7 +35,9 @@ public class DriveCmd extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    tankDriveSubsystem.TankDrive(leftSpd, rightSpd);
+    double LeftSpeeds = leftSpd.get();
+    double RightSpeeds = rightSpd.get();
+    tankDriveSubsystem.TankDrive(LeftSpeeds, RightSpeeds);
   }
 
   // Called once the command ends or is interrupted.

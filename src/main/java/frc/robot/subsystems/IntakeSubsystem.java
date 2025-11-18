@@ -48,6 +48,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     endEffector.configure(endEffectorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
+  
 
   
 

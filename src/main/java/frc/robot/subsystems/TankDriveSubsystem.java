@@ -8,6 +8,7 @@ import com.revrobotics.spark.SparkMax;
 
 import java.util.function.Supplier;
 
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -33,7 +34,7 @@ public class TankDriveSubsystem extends SubsystemBase {
   }
 
   private SparkMax frontRight = new SparkMax(Constants.DriveConstants.kFrontRightMotorId, MotorType.kBrushless);
-  private SparkMax frontLeft = new SparkMax(Constants.DriveConstants.kBackLeftMotorId, MotorType.kBrushless);
+  private SparkMax frontLeft = new SparkMax(Constants.DriveConstants.kFrontLeftMotorId, MotorType.kBrushless);
   private SparkMax backRight = new SparkMax(Constants.DriveConstants.kBackRightMotorId,MotorType.kBrushless);
   private SparkMax backLeft = new SparkMax(Constants.DriveConstants.kBackLeftMotorId, MotorType.kBrushless);
 
@@ -52,6 +53,8 @@ public class TankDriveSubsystem extends SubsystemBase {
   private void configureMotors(){
   SparkMaxConfig frontRightConfig = new SparkMaxConfig();
   SparkMaxConfig frontLeftConfig = new SparkMaxConfig();
+  SparkMaxConfig backRightConfig = new SparkMaxConfig();
+  SparkMaxConfig backLeftConfig = new SparkMaxConfig();
  
   frontRightConfig.inverted(true).idleMode(IdleMode.kCoast);
   frontLeftConfig.inverted(false).idleMode(IdleMode.kCoast);
@@ -62,20 +65,37 @@ public class TankDriveSubsystem extends SubsystemBase {
   frontRightConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(0.002,0,0).outputRange(-1,1);
   frontLeftConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(0.002,0,0).outputRange(-1, 1);
 
-  frontRight.configure(frontRightConfig,ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-  frontLeft.configure(frontLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  frontRight.configure(frontRightConfig,ResetMode.kResetSafeParameters, PersistMode.kPersistParameters); //Persist keeps PID Values and other config values even after robot is turned off. 
+  frontLeft.configure(frontLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters); //ResetMode clears motor's default settings before setting new configs to it. 
+
+  backRightConfig.follow(frontRight);
+  backLeftConfig.follow(frontLeft);
+
+  backRight.configure(backRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  backLeft.configure(backLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
   }
 
-  public void TankDrive(Supplier<Double> leftSpeed, Supplier<Double> rightSpeed){
-    double LeftSpeed = leftSpeed.get();
-    double RightSpeed = rightSpeed.get();
+  private double applyDeadband(double input){
+  double deadband = 0.05;
+  if(Math.abs(input) < deadband){
+    input = 0;
+  }
+  return input;
+  }
 
-    frontLeft.set(LeftSpeed);
-    frontRight.set(RightSpeed);
+  public void TankDrive(double leftSpeed, double rightSpeed){
+    leftSpeed = applyDeadband(leftSpeed);
+    rightSpeed = applyDeadband(rightSpeed);
+    
+    double leftRPM = leftSpeed*Constants.DriveConstants.kMaxRPM;
+    double rightRPM = rightSpeed*Constants.DriveConstants.kMaxRPM;
 
-    backLeft.set(frontLeft.get());
-    backRight.set(frontRight.get());
+    frontLeft.getClosedLoopController().setReference(leftRPM, ControlType.kVelocity);
+    frontRight.getClosedLoopController().setReference(rightRPM, ControlType.kVelocity);
+
+    //frontLeft.set(leftSpeed);
+   //frontRight.set(rightSpeed);
   }
 
   public void resetGyro(){

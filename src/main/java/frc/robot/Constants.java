@@ -21,5 +21,8 @@ public final class Constants {
     public static final int kBackRightMotorId = 2;
     public static final int kFrontLeftMotorId = 3;
     public static final int kBackLeftMotorId = 4; 
+
+    public static final double kMaxRPM = 5670; //Multiply by gear ratio later
+    
   }
 }
