@@ -5,23 +5,28 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SoftLimitConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Utils.Preset;
 
 public class IntakeSubsystem extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
-  private static TankDriveSubsystem INSTANCE;
+  private static IntakeSubsystem INSTANCE;
 
-  public static TankDriveSubsystem getInstance(){
+  public static IntakeSubsystem getInstance(){
     if(INSTANCE==null) {
-      INSTANCE = new TankDriveSubsystem();
+      INSTANCE = new IntakeSubsystem();
     }
     return INSTANCE;
  
@@ -37,18 +42,57 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void MotorConfigs(){
     SparkMaxConfig endEffectorConfig = new SparkMaxConfig();
+    SparkMaxConfig intakeMotorConfig = new SparkMaxConfig();
 
     endEffectorConfig.inverted(false).idleMode(IdleMode.kBrake);
     endEffectorConfig.closedLoopRampRate(0.3);
-    endEffectorConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(0.002,0,0).outputRange(-1,1);
-    endEffector.configure(endEffectorConfig,ResetMode.kResetSafeParameters,PersistMode.kPersistParameters);
+    endEffectorConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(0.00002,0,0).outputRange(-1,1);
+    
 
+   
     endEffectorConfig.encoder.positionConversionFactor(14.4);
     endEffectorConfig.encoder.velocityConversionFactor(0.24);
 
+    intakeMotorConfig.inverted(false).idleMode(IdleMode.kCoast);
+
+    //Bounds
+    endEffectorConfig.softLimit.forwardSoftLimit(Constants.ArmConstants.forwardSoftLimit);
+    endEffectorConfig.softLimit.reverseSoftLimit(Constants.ArmConstants.reverseSoftLimit);
+    endEffectorConfig.softLimit.forwardSoftLimitEnabled(true);
+    endEffectorConfig.softLimit.reverseSoftLimitEnabled(true);
+    
+
+    intakeMotor.configure(intakeMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     endEffector.configure(endEffectorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    
   }
-  
+
+  public void moveIntake(Preset preset){
+    endEffector.getClosedLoopController().setReference(preset.position, ControlType.kPosition);
+  }
+
+  public void runIntake(){
+    intakeMotor.set(Constants.ArmConstants.intakeMotorSpeed);
+  }
+
+  public void joystickMoveIntake(double motorSpeed){
+  endEffector.getClosedLoopController().setReference(motorSpeed, ControlType.kVelocity);
+  }
+
+  public boolean isIntakeAtPosition(Preset preset){
+  double target  = preset.position;
+  double current = endEffector.getEncoder().getPosition();
+  double tolerance = Constants.ArmConstants.endEffectorTolerance;
+
+  return Math.abs(target - current) <= tolerance;
+
+  }
+
+
+
+
+
+
 
   
 

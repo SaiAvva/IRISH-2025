@@ -17,7 +17,7 @@ import com.studica.frc.AHRS;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-import edu.wpi.first.wpilibj.SPI;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -38,7 +38,7 @@ public class TankDriveSubsystem extends SubsystemBase {
   private SparkMax backRight = new SparkMax(Constants.DriveConstants.kBackRightMotorId,MotorType.kBrushless);
   private SparkMax backLeft = new SparkMax(Constants.DriveConstants.kBackLeftMotorId, MotorType.kBrushless);
 
-  private AHRS navx = new AHRS(null);
+  
 
   
 
@@ -62,8 +62,8 @@ public class TankDriveSubsystem extends SubsystemBase {
   frontRightConfig.closedLoopRampRate(0.3);
   frontLeftConfig.closedLoopRampRate(0.3);
 
-  frontRightConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(0.002,0,0).outputRange(-1,1);
-  frontLeftConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(0.002,0,0).outputRange(-1, 1);
+  frontRightConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(0.00009,0,0).outputRange(-0.5,0.5);
+  frontLeftConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(0.00009,0,0).outputRange(-0.5, 0.5);
 
   frontRight.configure(frontRightConfig,ResetMode.kResetSafeParameters, PersistMode.kPersistParameters); //Persist keeps PID Values and other config values even after robot is turned off. 
   frontLeft.configure(frontLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters); //ResetMode clears motor's default settings before setting new configs to it. 
@@ -76,8 +76,9 @@ public class TankDriveSubsystem extends SubsystemBase {
 
   }
 
+
   private double applyDeadband(double input){
-  double deadband = 0.05;
+  double deadband = 0.1;
   if(Math.abs(input) < deadband){
     input = 0;
   }
@@ -88,19 +89,16 @@ public class TankDriveSubsystem extends SubsystemBase {
     leftSpeed = applyDeadband(leftSpeed);
     rightSpeed = applyDeadband(rightSpeed);
     
-    double leftRPM = leftSpeed*Constants.DriveConstants.kMaxRPM;
-    double rightRPM = rightSpeed*Constants.DriveConstants.kMaxRPM;
+   double leftRPM = leftSpeed*Constants.DriveConstants.kMaxRPM;
+   double rightRPM = rightSpeed*Constants.DriveConstants.kMaxRPM;
 
-    frontLeft.getClosedLoopController().setReference(leftRPM, ControlType.kVelocity);
-    frontRight.getClosedLoopController().setReference(rightRPM, ControlType.kVelocity);
+   frontLeft.getClosedLoopController().setReference(leftRPM, ControlType.kVelocity);
+   frontRight.getClosedLoopController().setReference(rightRPM, ControlType.kVelocity);
 
-    //frontLeft.set(leftSpeed);
-   //frontRight.set(rightSpeed);
+   //frontLeft.set(leftSpeed);
+   // frontRight.set(rightSpeed);
   }
 
-  public void resetGyro(){
-  navx.reset();
-  }
 
   /**
    * Example command factory method.

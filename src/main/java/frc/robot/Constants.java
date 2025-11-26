@@ -14,15 +14,27 @@ package frc.robot;
  */
 public final class Constants {
   public static class OperatorConstants {
-    public static final int kDriverControllerPort = 1;
+    public static final int kDriverControllerPort = 0;
+    public static final int kArmControllerPort = 1;
   }
+  
   public static class DriveConstants{
-    public static final int kFrontRightMotorId = 1;
-    public static final int kBackRightMotorId = 2;
-    public static final int kFrontLeftMotorId = 3;
-    public static final int kBackLeftMotorId = 4; 
+    public static final int kFrontRightMotorId = 14;
+    public static final int kBackRightMotorId = 13;
+    public static final int kFrontLeftMotorId = 11;
+    public static final int kBackLeftMotorId = 12; 
 
-    public static final double kMaxRPM = 5670; //Multiply by gear ratio later
+    public static final double kMaxRPM = 5670; //Multiply by gear ratio later - 12.75:1
     
+  }
+
+  public static class ArmConstants{
+    //Change these values later
+    public static final double forwardSoftLimit = 10.2;
+    public static final double reverseSoftLimit  = 2;
+
+    public static final double intakeMotorSpeed = 0.8;
+
+    public static final double endEffectorTolerance = 2; 
   }
 }

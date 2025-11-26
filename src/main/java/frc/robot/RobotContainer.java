@@ -5,8 +5,12 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.Utils.Preset;
 import frc.robot.commands.Autos;
 import frc.robot.commands.DriveCmd;
+import frc.robot.commands.IntakeCmd;
+import frc.robot.commands.PresetIntakeCmd;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TankDriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -22,11 +26,15 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final TankDriveSubsystem tankDriveSubsystem = TankDriveSubsystem.getInstance(); 
+  private final IntakeSubsystem intakeSubsystem = IntakeSubsystem.getInstance();
   
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
+
+  private final CommandXboxController m_armController = 
+       new CommandXboxController(OperatorConstants.kArmControllerPort);
       
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -45,9 +53,11 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-  tankDriveSubsystem.setDefaultCommand(new DriveCmd(tankDriveSubsystem, () -> m_driverController.getLeftY(), () -> m_driverController.getRightY()));
-  m_driverController.b().onTrue(Commands.runOnce(()-> tankDriveSubsystem.resetGyro(), tankDriveSubsystem));
-
+  tankDriveSubsystem.setDefaultCommand(new DriveCmd(tankDriveSubsystem, () -> -m_driverController.getLeftY(), () -> -m_driverController.getRightY()));
+  intakeSubsystem.setDefaultCommand(new IntakeCmd(intakeSubsystem, () -> m_armController.getLeftY()));
+  
+  m_armController.x().onTrue(new PresetIntakeCmd(intakeSubsystem, Preset.Intake));
+  m_armController.b().onTrue(new PresetIntakeCmd(intakeSubsystem, Preset.Stowed));
   
   }
 
