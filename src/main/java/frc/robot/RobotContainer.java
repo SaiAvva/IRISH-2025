@@ -8,10 +8,14 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.Utils.Preset;
 import frc.robot.commands.Autos;
 import frc.robot.commands.DriveCmd;
+import frc.robot.commands.DriveStraightCmd;
 import frc.robot.commands.IntakeCmd;
-import frc.robot.commands.PresetIntakeCmd;
+import frc.robot.commands.WristManualCmd;
+import frc.robot.commands.WristCmd;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TankDriveSubsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -27,6 +31,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final TankDriveSubsystem tankDriveSubsystem = TankDriveSubsystem.getInstance(); 
   private final IntakeSubsystem intakeSubsystem = IntakeSubsystem.getInstance();
+  private final ShooterSubsystem shooterSubsystem = ShooterSubsystem.getInstance();
   
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
@@ -41,6 +46,7 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
+    DashboardSettings();
   }
 
   /**
@@ -54,11 +60,32 @@ public class RobotContainer {
    */
   private void configureBindings() {
   tankDriveSubsystem.setDefaultCommand(new DriveCmd(tankDriveSubsystem, () -> -m_driverController.getLeftY(), () -> -m_driverController.getRightY()));
-  intakeSubsystem.setDefaultCommand(new IntakeCmd(intakeSubsystem, () -> m_armController.getLeftY()));
+  intakeSubsystem.setDefaultCommand(new WristManualCmd(intakeSubsystem, () -> m_armController.getLeftY()));
+
+
+  m_driverController.leftTrigger().and(m_driverController.rightTrigger()).whileTrue(new DriveStraightCmd(tankDriveSubsystem, ()-> m_driverController.getRightY()));
   
-  m_armController.x().onTrue(new PresetIntakeCmd(intakeSubsystem, Preset.Intake));
-  m_armController.b().onTrue(new PresetIntakeCmd(intakeSubsystem, Preset.Stowed));
   
+  m_armController.x().whileTrue(new WristCmd(intakeSubsystem, Preset.Intake));
+  m_armController.b().whileTrue(new WristCmd(intakeSubsystem, Preset.Stowed));
+  m_armController.rightTrigger().onTrue(Commands.runOnce(()-> intakeSubsystem.runIntake(), intakeSubsystem));
+  m_armController.leftTrigger().onTrue(Commands.runOnce(()-> intakeSubsystem.runOutake(), intakeSubsystem));
+  m_armController.leftTrigger().and(m_driverController.rightTrigger()).onTrue(Commands.runOnce(()-> intakeSubsystem.stopIntake(), intakeSubsystem));
+  m_armController.rightBumper().onTrue(Commands.runOnce(() -> shooterSubsystem.Shoot(), shooterSubsystem));
+  m_armController.leftBumper().onTrue(Commands.runOnce(() -> shooterSubsystem.suckBall(), shooterSubsystem));
+  m_armController.rightBumper().and(m_armController.leftBumper()).onTrue(Commands.runOnce(() -> shooterSubsystem.stopOutake()));
+
+  m_armController.y().onTrue(Commands.runOnce(()-> {
+    System.out.println("----------------------------------");
+    System.out.println("Wrist Position: " + intakeSubsystem.getWristPosition());
+    System.out.println("Shooter Position: " + shooterSubsystem.getShooterPivotPosition());
+    System.out.println("----------------------------------");
+  }));
+  }
+
+
+
+  private void DashboardSettings(){
   }
 
   /**

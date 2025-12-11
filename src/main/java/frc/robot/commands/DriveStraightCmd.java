@@ -4,8 +4,6 @@
 
 package frc.robot.commands;
 
-import frc.robot.Utils.Preset;
-import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TankDriveSubsystem;
 
 import java.util.function.Supplier;
@@ -13,23 +11,21 @@ import java.util.function.Supplier;
 import edu.wpi.first.wpilibj2.command.Command;
 
 /** An example command that uses an example subsystem. */
-public class PresetIntakeCmd extends Command {
+public class DriveStraightCmd extends Command {
   @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
-  private final IntakeSubsystem intakeSubsystem = IntakeSubsystem.getInstance();
-  private final Preset preset;
+  TankDriveSubsystem tankDriveSubsystem = TankDriveSubsystem.getInstance();
+  private final Supplier<Double> rSpd;
+
   /**
    * Creates a new ExampleCommand.
    *
    * @param subsystem The subsystem used by this command.
    */
-  public PresetIntakeCmd(IntakeSubsystem intakeSubsystem, Preset preset) {
-    
-    this.preset = preset;
+  public DriveStraightCmd(TankDriveSubsystem tankDriveSubsystem, Supplier<Double> rSpd) {
+    this.rSpd = rSpd;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(intakeSubsystem);
+    addRequirements(tankDriveSubsystem);
   }
-
-  
 
   // Called when the command is initially scheduled.
   @Override
@@ -38,7 +34,8 @@ public class PresetIntakeCmd extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-  intakeSubsystem.moveIntake(preset);
+    double rSpeed = rSpd.get();
+    tankDriveSubsystem.driveStriaght(rSpeed);
   }
 
   // Called once the command ends or is interrupted.
@@ -48,6 +45,6 @@ public class PresetIntakeCmd extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return intakeSubsystem.isIntakeAtPosition(preset);
+    return false;
   }
 }

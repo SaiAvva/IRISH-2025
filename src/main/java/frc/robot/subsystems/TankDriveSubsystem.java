@@ -78,7 +78,7 @@ public class TankDriveSubsystem extends SubsystemBase {
 
 
   private double applyDeadband(double input){
-  double deadband = 0.1;
+  double deadband = 0.15;
   if(Math.abs(input) < deadband){
     input = 0;
   }
@@ -88,6 +88,17 @@ public class TankDriveSubsystem extends SubsystemBase {
   public void TankDrive(double leftSpeed, double rightSpeed){
     leftSpeed = applyDeadband(leftSpeed);
     rightSpeed = applyDeadband(rightSpeed);
+
+    leftSpeed = Math.copySign( leftSpeed * leftSpeed, leftSpeed);
+    rightSpeed = Math.copySign(rightSpeed * rightSpeed, rightSpeed);
+
+  double diff = Math.abs(leftSpeed - rightSpeed);
+
+  if (diff < 0.1){
+    double avg = (leftSpeed+rightSpeed)/2;
+    leftSpeed = avg;
+    rightSpeed = avg;
+  }
     
    double leftRPM = leftSpeed*Constants.DriveConstants.kMaxRPM;
    double rightRPM = rightSpeed*Constants.DriveConstants.kMaxRPM;
@@ -98,6 +109,15 @@ public class TankDriveSubsystem extends SubsystemBase {
    //frontLeft.set(leftSpeed);
    // frontRight.set(rightSpeed);
   }
+
+  public void driveStriaght(double rSpeed){
+    rSpeed = applyDeadband(rSpeed);
+    double RPM = rSpeed*Constants.DriveConstants.kMaxRPM;
+    frontLeft.getClosedLoopController().setReference(RPM, ControlType.kVelocity);
+    frontRight.getClosedLoopController().setReference(RPM, ControlType.kVelocity);
+  }
+
+  
 
 
   /**

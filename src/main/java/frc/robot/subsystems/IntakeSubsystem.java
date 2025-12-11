@@ -32,8 +32,8 @@ public class IntakeSubsystem extends SubsystemBase {
  
   }
 
-  private SparkMax intakeMotor = new SparkMax(1,MotorType.kBrushless);
-  private SparkMax endEffector = new SparkMax(2,MotorType.kBrushless);
+  private SparkMax intakeMotor = new SparkMax(Constants.ArmConstants.kIntakeMotorId,MotorType.kBrushless);
+  private SparkMax endEffector = new SparkMax(Constants.ArmConstants.kEndEffectorMotorId,MotorType.kBrushless);
 
   public IntakeSubsystem() {
     MotorConfigs();
@@ -60,6 +60,7 @@ public class IntakeSubsystem extends SubsystemBase {
     endEffectorConfig.softLimit.reverseSoftLimit(Constants.ArmConstants.reverseSoftLimit);
     endEffectorConfig.softLimit.forwardSoftLimitEnabled(true);
     endEffectorConfig.softLimit.reverseSoftLimitEnabled(true);
+
     
 
     intakeMotor.configure(intakeMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -71,6 +72,10 @@ public class IntakeSubsystem extends SubsystemBase {
     endEffector.getClosedLoopController().setReference(preset.position, ControlType.kPosition);
   }
 
+  public double getWristPosition(){
+    return endEffector.getEncoder().getPosition();
+  }
+
   public void runIntake(){
     intakeMotor.set(Constants.ArmConstants.intakeMotorSpeed);
   }
@@ -78,6 +83,15 @@ public class IntakeSubsystem extends SubsystemBase {
   public void joystickMoveIntake(double motorSpeed){
   endEffector.getClosedLoopController().setReference(motorSpeed, ControlType.kVelocity);
   }
+  
+  public void stopIntake(){
+    intakeMotor.set(0);
+  }
+
+  public void runOutake(){
+    intakeMotor.set(Constants.ArmConstants.outakeMotorSpeed);
+  }
+
 
   public boolean isIntakeAtPosition(Preset preset){
   double target  = preset.position;
@@ -87,12 +101,6 @@ public class IntakeSubsystem extends SubsystemBase {
   return Math.abs(target - current) <= tolerance;
 
   }
-
-
-
-
-
-
 
   
 
